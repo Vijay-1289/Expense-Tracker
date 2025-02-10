@@ -132,7 +132,7 @@ const Index = () => {
           <Alert variant="destructive">
             <AlertTriangle className="h-4 w-4" />
             <AlertDescription>
-              Warning: You have spent more than 80% of your budget (₹{budget.amount.toLocaleString('en-IN')})
+              Warning: You have spent more than 80% of your budget (₹{budget.amount.toString()})
             </AlertDescription>
           </Alert>
         )}
@@ -141,23 +141,23 @@ const Index = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
             <h3 className="text-lg font-medium mb-2">Total Spent</h3>
-            <p className="text-3xl font-bold">₹{totalSpent.toLocaleString('en-IN')}</p>
+            <p className="text-3xl font-bold">₹{totalSpent.toString()}</p>
             <p className="text-muted-foreground text-sm">This month</p>
           </div>
           <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
             <h3 className="text-lg font-medium mb-2">Average Daily</h3>
             <p className="text-3xl font-bold">
-              ₹{(totalSpent / 30).toFixed(2).toLocaleString('en-IN')}
+              ₹{(totalSpent / 30).toFixed(2)}
             </p>
             <p className="text-muted-foreground text-sm">Last 30 days</p>
           </div>
           <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
             <h3 className="text-lg font-medium mb-2">Budget Left</h3>
             <p className="text-3xl font-bold text-expense-low">
-              ₹{budget ? (budget.amount - totalSpent).toLocaleString('en-IN') : '0'}
+              ₹{budget ? (budget.amount - totalSpent).toString() : '0'}
             </p>
             <p className="text-muted-foreground text-sm">
-              From ₹{budget?.amount.toLocaleString('en-IN') || '0'}
+              From ₹{budget?.amount.toString() || '0'}
             </p>
           </div>
         </div>
