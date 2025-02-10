@@ -38,6 +38,7 @@ const Index = () => {
       const { data, error } = await supabase
         .from("expenses")
         .select("*")
+        .eq('user_id', user.id)
         .order("date", { ascending: false });
 
       if (!error && data) {
@@ -51,6 +52,7 @@ const Index = () => {
       const { data, error } = await supabase
         .from("budgets")
         .select("*")
+        .eq('user_id', user.id)
         .order("created_at", { ascending: false })
         .limit(1)
         .single();
@@ -71,7 +73,7 @@ const Index = () => {
     const expensesSubscription = supabase
       .channel('expenses_channel')
       .on('postgres_changes', 
-        { event: '*', schema: 'public', table: 'expenses' },
+        { event: '*', schema: 'public', table: 'expenses', filter: `user_id=eq.${user.id}` },
         () => {
           fetchExpenses();
           fetchBudget();
@@ -87,6 +89,9 @@ const Index = () => {
   const handleLogin = async () => {
     await supabase.auth.signInWithOAuth({
       provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/`
+      }
     });
   };
 
@@ -114,6 +119,12 @@ const Index = () => {
           <div className="flex gap-4">
             <SetBudgetDialog />
             <AddExpenseDialog />
+            <Button 
+              variant="outline" 
+              onClick={() => supabase.auth.signOut()}
+            >
+              Sign Out
+            </Button>
           </div>
         </div>
 
@@ -128,19 +139,19 @@ const Index = () => {
 
         {/* Overview Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="expense-card">
+          <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
             <h3 className="text-lg font-medium mb-2">Total Spent</h3>
             <p className="text-3xl font-bold">₹{totalSpent.toLocaleString('en-IN')}</p>
             <p className="text-muted-foreground text-sm">This month</p>
           </div>
-          <div className="expense-card">
+          <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
             <h3 className="text-lg font-medium mb-2">Average Daily</h3>
             <p className="text-3xl font-bold">
               ₹{(totalSpent / 30).toFixed(2).toLocaleString('en-IN')}
             </p>
             <p className="text-muted-foreground text-sm">Last 30 days</p>
           </div>
-          <div className="expense-card">
+          <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
             <h3 className="text-lg font-medium mb-2">Budget Left</h3>
             <p className="text-3xl font-bold text-expense-low">
               ₹{budget ? (budget.amount - totalSpent).toLocaleString('en-IN') : '0'}

@@ -11,6 +11,7 @@ import { CalendarIcon, Wallet } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/providers/AuthProvider";
 
 export function SetBudgetDialog() {
   const [open, setOpen] = useState(false);
@@ -18,10 +19,20 @@ export function SetBudgetDialog() {
   const [startDate, setStartDate] = useState<Date | undefined>(new Date());
   const [endDate, setEndDate] = useState<Date | undefined>(new Date());
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (!user) {
+      toast({
+        title: "Error",
+        description: "You must be logged in to set a budget",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (!amount || !startDate || !endDate) {
       toast({
         title: "Error",
@@ -44,6 +55,7 @@ export function SetBudgetDialog() {
       amount: parseFloat(amount),
       start_date: startDate.toISOString(),
       end_date: endDate.toISOString(),
+      user_id: user.id
     });
 
     if (error) {

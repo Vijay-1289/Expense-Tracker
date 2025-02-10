@@ -12,6 +12,7 @@ import { CalendarIcon, PlusCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/providers/AuthProvider";
 
 const categories = [
   "Food",
@@ -31,10 +32,20 @@ export function AddExpenseDialog() {
   const [category, setCategory] = useState("");
   const [date, setDate] = useState<Date | undefined>(new Date());
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (!user) {
+      toast({
+        title: "Error",
+        description: "You must be logged in to add expenses",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (!title || !amount || !category || !date) {
       toast({
         title: "Error",
@@ -49,6 +60,7 @@ export function AddExpenseDialog() {
       amount: parseFloat(amount),
       category,
       date: date.toISOString(),
+      user_id: user.id
     });
 
     if (error) {
