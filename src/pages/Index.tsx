@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertTriangle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/components/ui/use-toast";
 
 interface Expense {
   id: string;
@@ -30,6 +31,8 @@ const Index = () => {
   const [budget, setBudget] = useState<Budget | null>(null);
   const [totalSpent, setTotalSpent] = useState(0);
   const [showBudgetAlert, setShowBudgetAlert] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     if (!user) return;
@@ -59,7 +62,6 @@ const Index = () => {
 
       if (!error && data) {
         setBudget(data as Budget);
-        // Show alert if spent amount is more than 80% of budget
         if (totalSpent / data.amount > 0.8) {
           setShowBudgetAlert(true);
         }
@@ -69,7 +71,6 @@ const Index = () => {
     fetchExpenses();
     fetchBudget();
 
-    // Subscribe to real-time changes
     const expensesSubscription = supabase
       .channel('expenses_channel')
       .on('postgres_changes', 
@@ -87,12 +88,35 @@ const Index = () => {
   }, [user, totalSpent]);
 
   const handleLogin = async () => {
-    await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/`
+    try {
+      setIsLoading(true);
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: window.location.origin,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
+        },
+      });
+
+      if (error) {
+        toast({
+          variant: "destructive",
+          title: "Authentication Error",
+          description: error.message,
+        });
       }
-    });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "An unexpected error occurred during sign in.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   if (!user) {
@@ -101,7 +125,12 @@ const Index = () => {
         <div className="text-center space-y-4">
           <h1 className="text-4xl font-bold">Welcome to Expense Tracker</h1>
           <p className="text-muted-foreground">Please sign in to continue</p>
-          <Button onClick={handleLogin}>Sign in with Google</Button>
+          <Button 
+            onClick={handleLogin} 
+            disabled={isLoading}
+          >
+            {isLoading ? "Signing in..." : "Sign in with Google"}
+          </Button>
         </div>
       </div>
     );
