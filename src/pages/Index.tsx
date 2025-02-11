@@ -98,19 +98,20 @@ const Index = () => {
   const handleLogin = async () => {
     try {
       setIsLoading(true);
-      const redirectTo = new URL('/', window.location.origin).toString();
-      console.log('Attempting login with redirect URL:', redirectTo);
-
-      const { error } = await supabase.auth.signInWithOAuth({
+      console.log('Starting Google authentication...');
+      
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo,
+          redirectTo: window.location.origin,
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',
           },
         },
       });
+
+      console.log('Auth response:', { data, error });
 
       if (error) {
         console.error('Auth error:', error);
