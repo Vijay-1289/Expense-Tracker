@@ -55,33 +55,51 @@ export function AddExpenseDialog() {
       return;
     }
 
-    const { error } = await supabase.from("expenses").insert({
-      title,
-      amount: parseFloat(amount),
-      category,
-      date: date.toISOString(),
-      user_id: user.id
-    });
+    try {
+      console.log('Adding expense:', {
+        title,
+        amount,
+        category,
+        date,
+        user_id: user.id
+      });
 
-    if (error) {
+      const { error } = await supabase.from("expenses").insert({
+        title,
+        amount: parseFloat(amount),
+        category,
+        date: date.toISOString(),
+        user_id: user.id
+      });
+
+      if (error) {
+        console.error('Error adding expense:', error);
+        toast({
+          title: "Error",
+          description: "Failed to add expense: " + error.message,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      toast({
+        title: "Success",
+        description: "Expense added successfully",
+      });
+
+      setOpen(false);
+      setTitle("");
+      setAmount("");
+      setCategory("");
+      setDate(new Date());
+    } catch (error) {
+      console.error('Unexpected error adding expense:', error);
       toast({
         title: "Error",
-        description: "Failed to add expense",
+        description: "An unexpected error occurred",
         variant: "destructive",
       });
-      return;
     }
-
-    toast({
-      title: "Success",
-      description: "Expense added successfully",
-    });
-
-    setOpen(false);
-    setTitle("");
-    setAmount("");
-    setCategory("");
-    setDate(new Date());
   };
 
   return (
@@ -147,11 +165,11 @@ export function AddExpenseDialog() {
                   {date ? format(date, "PPP") : <span>Pick a date</span>}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
+              <PopoverContent className="w-auto p-0" align="start">
                 <Calendar
                   mode="single"
                   selected={date}
-                  onSelect={setDate}
+                  onSelect={(newDate) => setDate(newDate || new Date())}
                   initialFocus
                 />
               </PopoverContent>

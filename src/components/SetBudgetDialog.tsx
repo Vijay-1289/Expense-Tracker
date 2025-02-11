@@ -10,7 +10,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { CalendarIcon, Wallet } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/providers/AuthProvider";
 
 export function SetBudgetDialog() {
@@ -51,31 +51,48 @@ export function SetBudgetDialog() {
       return;
     }
 
-    const { error } = await supabase.from("budgets").insert({
-      amount: parseFloat(amount),
-      start_date: startDate.toISOString(),
-      end_date: endDate.toISOString(),
-      user_id: user.id
-    });
+    try {
+      console.log('Setting budget:', {
+        amount,
+        start_date: startDate,
+        end_date: endDate,
+        user_id: user.id
+      });
 
-    if (error) {
+      const { error } = await supabase.from("budgets").insert({
+        amount: parseFloat(amount),
+        start_date: startDate.toISOString(),
+        end_date: endDate.toISOString(),
+        user_id: user.id
+      });
+
+      if (error) {
+        console.error('Error setting budget:', error);
+        toast({
+          title: "Error",
+          description: "Failed to set budget: " + error.message,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      toast({
+        title: "Success",
+        description: "Budget set successfully",
+      });
+
+      setOpen(false);
+      setAmount("");
+      setStartDate(new Date());
+      setEndDate(new Date());
+    } catch (error) {
+      console.error('Unexpected error setting budget:', error);
       toast({
         title: "Error",
-        description: "Failed to set budget",
+        description: "An unexpected error occurred",
         variant: "destructive",
       });
-      return;
     }
-
-    toast({
-      title: "Success",
-      description: "Budget set successfully",
-    });
-
-    setOpen(false);
-    setAmount("");
-    setStartDate(new Date());
-    setEndDate(new Date());
   };
 
   return (
@@ -117,11 +134,11 @@ export function SetBudgetDialog() {
                   {startDate ? format(startDate, "PPP") : <span>Pick a date</span>}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
+              <PopoverContent className="w-auto p-0" align="start">
                 <Calendar
                   mode="single"
                   selected={startDate}
-                  onSelect={setStartDate}
+                  onSelect={(newDate) => setStartDate(newDate || new Date())}
                   initialFocus
                 />
               </PopoverContent>
@@ -142,11 +159,11 @@ export function SetBudgetDialog() {
                   {endDate ? format(endDate, "PPP") : <span>Pick a date</span>}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
+              <PopoverContent className="w-auto p-0" align="start">
                 <Calendar
                   mode="single"
                   selected={endDate}
-                  onSelect={setEndDate}
+                  onSelect={(newDate) => setEndDate(newDate || new Date())}
                   initialFocus
                 />
               </PopoverContent>
