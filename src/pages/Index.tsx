@@ -25,7 +25,6 @@ interface Budget {
   end_date: string;
 }
 
-// Helper function to format currency in Indian Rupees
 const formatIndianCurrency = (amount: number) => {
   return new Intl.NumberFormat('en-IN', {
     style: 'currency',
@@ -99,10 +98,13 @@ const Index = () => {
   const handleLogin = async () => {
     try {
       setIsLoading(true);
+      const redirectTo = window.location.origin;
+      console.log('Attempting login with redirect URL:', redirectTo);
+
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/`,
+          redirectTo,
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',
@@ -111,6 +113,7 @@ const Index = () => {
       });
 
       if (error) {
+        console.error('Auth error:', error);
         toast({
           variant: "destructive",
           title: "Authentication Error",
@@ -118,6 +121,7 @@ const Index = () => {
         });
       }
     } catch (error) {
+      console.error('Unexpected error:', error);
       toast({
         variant: "destructive",
         title: "Error",
@@ -149,7 +153,6 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background p-8">
       <div className="max-w-7xl mx-auto space-y-8">
-        {/* Header */}
         <div className="flex justify-between items-center animate-fade-in">
           <div>
             <h1 className="text-4xl font-bold tracking-tight">Expense Tracker</h1>
@@ -177,7 +180,6 @@ const Index = () => {
           </Alert>
         )}
 
-        {/* Overview Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6 hover-scale animate-fade-in">
             <h3 className="text-lg font-medium mb-2">Total Spent</h3>
@@ -202,7 +204,6 @@ const Index = () => {
           </div>
         </div>
 
-        {/* Chart Section */}
         <div className="h-[400px] animate-fade-in" style={{ animationDelay: '300ms' }}>
           <ExpenseChart
             data={expenses.map((expense) => ({
@@ -212,7 +213,6 @@ const Index = () => {
           />
         </div>
 
-        {/* Recent Expenses */}
         <div className="space-y-4 animate-fade-in" style={{ animationDelay: '400ms' }}>
           <h2 className="text-2xl font-semibold">Recent Expenses</h2>
           <div className="grid gap-4">
