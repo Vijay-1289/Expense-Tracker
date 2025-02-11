@@ -10,10 +10,28 @@ interface ExpenseChartProps {
 }
 
 const ExpenseChart = ({ data }: ExpenseChartProps) => {
+  const CustomTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-background border rounded-lg p-3 shadow-lg">
+          <p className="font-medium">{label}</p>
+          <p className="text-primary">
+            {new Intl.NumberFormat('en-IN', {
+              style: 'currency',
+              currency: 'INR',
+              maximumFractionDigits: 0,
+            }).format(payload[0].value)}
+          </p>
+        </div>
+      );
+    }
+    return null;
+  };
+
   return (
-    <Card className="chart-container animated-entrance">
+    <Card className="p-6">
       <h3 className="font-semibold mb-4">Spending Trends</h3>
-      <ResponsiveContainer width="100%" height="100%">
+      <ResponsiveContainer width="100%" height={300}>
         <LineChart
           data={data}
           margin={{
@@ -36,22 +54,17 @@ const ExpenseChart = ({ data }: ExpenseChartProps) => {
             fontSize={12}
             tickLine={false}
             axisLine={false}
-            tickFormatter={(value) => `$${value}`}
+            tickFormatter={(value) => `₹${value}`}
           />
-          <Tooltip
-            contentStyle={{
-              backgroundColor: "white",
-              borderRadius: "8px",
-              border: "none",
-              boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
-            }}
-          />
+          <Tooltip content={<CustomTooltip />} />
           <Line
             type="monotone"
             dataKey="amount"
-            stroke="#000"
+            stroke="hsl(var(--primary))"
             strokeWidth={2}
             dot={false}
+            animationDuration={1500}
+            animationEasing="ease-in-out"
           />
         </LineChart>
       </ResponsiveContainer>

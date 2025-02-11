@@ -25,6 +25,15 @@ interface Budget {
   end_date: string;
 }
 
+// Helper function to format currency in Indian Rupees
+const formatIndianCurrency = (amount: number) => {
+  return new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+    maximumFractionDigits: 0,
+  }).format(amount);
+};
+
 const Index = () => {
   const { user } = useAuth();
   const [expenses, setExpenses] = useState<Expense[]>([]);
@@ -93,7 +102,7 @@ const Index = () => {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: window.location.origin,
+          redirectTo: `${window.location.origin}/`,
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',
@@ -122,12 +131,13 @@ const Index = () => {
   if (!user) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center space-y-4">
+        <div className="text-center space-y-4 animate-fade-in">
           <h1 className="text-4xl font-bold">Welcome to Expense Tracker</h1>
           <p className="text-muted-foreground">Please sign in to continue</p>
           <Button 
             onClick={handleLogin} 
             disabled={isLoading}
+            className="hover-scale"
           >
             {isLoading ? "Signing in..." : "Sign in with Google"}
           </Button>
@@ -140,7 +150,7 @@ const Index = () => {
     <div className="min-h-screen bg-background p-8">
       <div className="max-w-7xl mx-auto space-y-8">
         {/* Header */}
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-center animate-fade-in">
           <div>
             <h1 className="text-4xl font-bold tracking-tight">Expense Tracker</h1>
             <p className="text-muted-foreground">Keep track of your spending</p>
@@ -151,6 +161,7 @@ const Index = () => {
             <Button 
               variant="outline" 
               onClick={() => supabase.auth.signOut()}
+              className="hover-scale"
             >
               Sign Out
             </Button>
@@ -158,60 +169,62 @@ const Index = () => {
         </div>
 
         {showBudgetAlert && budget && (
-          <Alert variant="destructive">
+          <Alert variant="destructive" className="animate-fade-in">
             <AlertTriangle className="h-4 w-4" />
             <AlertDescription>
-              Warning: You have spent more than 80% of your budget (₹{budget.amount.toString()})
+              Warning: You have spent more than 80% of your budget ({formatIndianCurrency(budget.amount)})
             </AlertDescription>
           </Alert>
         )}
 
         {/* Overview Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
+          <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6 hover-scale animate-fade-in">
             <h3 className="text-lg font-medium mb-2">Total Spent</h3>
-            <p className="text-3xl font-bold">₹{totalSpent.toString()}</p>
+            <p className="text-3xl font-bold">{formatIndianCurrency(totalSpent)}</p>
             <p className="text-muted-foreground text-sm">This month</p>
           </div>
-          <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
+          <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6 hover-scale animate-fade-in" style={{ animationDelay: '100ms' }}>
             <h3 className="text-lg font-medium mb-2">Average Daily</h3>
             <p className="text-3xl font-bold">
-              ₹{(totalSpent / 30).toFixed(2)}
+              {formatIndianCurrency(totalSpent / 30)}
             </p>
             <p className="text-muted-foreground text-sm">Last 30 days</p>
           </div>
-          <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
+          <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6 hover-scale animate-fade-in" style={{ animationDelay: '200ms' }}>
             <h3 className="text-lg font-medium mb-2">Budget Left</h3>
             <p className="text-3xl font-bold text-expense-low">
-              ₹{budget ? (budget.amount - totalSpent).toString() : '0'}
+              {formatIndianCurrency(budget ? budget.amount - totalSpent : 0)}
             </p>
             <p className="text-muted-foreground text-sm">
-              From ₹{budget?.amount.toString() || '0'}
+              From {formatIndianCurrency(budget?.amount || 0)}
             </p>
           </div>
         </div>
 
         {/* Chart Section */}
-        <div className="h-[400px]">
+        <div className="h-[400px] animate-fade-in" style={{ animationDelay: '300ms' }}>
           <ExpenseChart
             data={expenses.map((expense) => ({
-              name: new Date(expense.date).toLocaleDateString(),
+              name: new Date(expense.date).toLocaleDateString('en-IN'),
               amount: expense.amount,
             }))}
           />
         </div>
 
         {/* Recent Expenses */}
-        <div className="space-y-4">
+        <div className="space-y-4 animate-fade-in" style={{ animationDelay: '400ms' }}>
           <h2 className="text-2xl font-semibold">Recent Expenses</h2>
           <div className="grid gap-4">
-            {expenses.map((expense) => (
+            {expenses.map((expense, index) => (
               <ExpenseCard
                 key={expense.id}
                 title={expense.title}
                 amount={expense.amount}
                 category={expense.category}
-                date={new Date(expense.date).toLocaleDateString()}
+                date={new Date(expense.date).toLocaleDateString('en-IN')}
+                className="animate-fade-in"
+                style={{ animationDelay: `${index * 50}ms` }}
               />
             ))}
           </div>
