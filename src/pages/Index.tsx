@@ -98,7 +98,7 @@ const Index = () => {
   const handleLogin = async () => {
     try {
       setIsLoading(true);
-      const redirectTo = window.location.origin;
+      const redirectTo = new URL('/', window.location.origin).toString();
       console.log('Attempting login with redirect URL:', redirectTo);
 
       const { error } = await supabase.auth.signInWithOAuth({
