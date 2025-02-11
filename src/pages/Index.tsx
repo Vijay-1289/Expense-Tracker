@@ -46,33 +46,65 @@ const Index = () => {
     if (!user) return;
 
     const fetchExpenses = async () => {
-      const { data, error } = await supabase
-        .from("expenses")
-        .select("*")
-        .eq('user_id', user.id)
-        .order("date", { ascending: false });
+      try {
+        console.log('Fetching expenses for user:', user.id);
+        const { data, error } = await supabase
+          .from("expenses")
+          .select("*")
+          .eq('user_id', user.id)
+          .order("date", { ascending: false });
 
-      if (!error && data) {
-        setExpenses(data as Expense[]);
-        const total = data.reduce((sum, expense) => sum + expense.amount, 0);
-        setTotalSpent(total);
+        if (error) {
+          console.error('Error fetching expenses:', error);
+          toast({
+            variant: "destructive",
+            title: "Error",
+            description: "Failed to load expenses. Please try again.",
+          });
+          return;
+        }
+
+        if (data) {
+          console.log('Fetched expenses:', data);
+          setExpenses(data as Expense[]);
+          const total = data.reduce((sum, expense) => sum + expense.amount, 0);
+          setTotalSpent(total);
+        }
+      } catch (error) {
+        console.error('Unexpected error fetching expenses:', error);
       }
     };
 
     const fetchBudget = async () => {
-      const { data, error } = await supabase
-        .from("budgets")
-        .select("*")
-        .eq('user_id', user.id)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .single();
+      try {
+        console.log('Fetching budget for user:', user.id);
+        const { data, error } = await supabase
+          .from("budgets")
+          .select("*")
+          .eq('user_id', user.id)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .single();
 
-      if (!error && data) {
-        setBudget(data as Budget);
-        if (totalSpent / data.amount > 0.8) {
-          setShowBudgetAlert(true);
+        if (error && error.code !== 'PGRST116') { // Ignore "no rows returned" error
+          console.error('Error fetching budget:', error);
+          toast({
+            variant: "destructive",
+            title: "Error",
+            description: "Failed to load budget. Please try again.",
+          });
+          return;
         }
+
+        if (data) {
+          console.log('Fetched budget:', data);
+          setBudget(data as Budget);
+          if (totalSpent / data.amount > 0.8) {
+            setShowBudgetAlert(true);
+          }
+        }
+      } catch (error) {
+        console.error('Unexpected error fetching budget:', error);
       }
     };
 
@@ -83,7 +115,8 @@ const Index = () => {
       .channel('expenses_channel')
       .on('postgres_changes', 
         { event: '*', schema: 'public', table: 'expenses', filter: `user_id=eq.${user.id}` },
-        () => {
+        (payload) => {
+          console.log('Expense change received:', payload);
           fetchExpenses();
           fetchBudget();
         }
@@ -93,7 +126,7 @@ const Index = () => {
     return () => {
       expensesSubscription.unsubscribe();
     };
-  }, [user, totalSpent]);
+  }, [user, totalSpent, toast]);
 
   const handleLogin = async () => {
     try {
