@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useAuth } from "@/providers/AuthProvider";
 import ExpenseCard from "@/components/ExpenseCard";
@@ -7,9 +6,10 @@ import { AddExpenseDialog } from "@/components/AddExpenseDialog";
 import { SetBudgetDialog } from "@/components/SetBudgetDialog";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, Sparkles, PiggyBank, TrendingUp } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface Expense {
   id: string;
@@ -41,6 +41,7 @@ const Index = () => {
   const [showBudgetAlert, setShowBudgetAlert] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     if (!user) return;
@@ -168,16 +169,21 @@ const Index = () => {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center space-y-4 animate-fade-in">
-          <h1 className="text-4xl font-bold">Welcome to Expense Tracker</h1>
-          <p className="text-muted-foreground">Please sign in to continue</p>
+      <div className="min-h-screen bg-gradient-to-br from-purple-100 via-pink-100 to-rose-100 flex items-center justify-center p-4">
+        <div className="text-center space-y-6 max-w-md w-full bg-white/80 backdrop-blur-lg rounded-2xl p-8 shadow-xl animate-fade-in">
+          <div className="flex justify-center">
+            <Sparkles className="h-12 w-12 text-purple-500 animate-pulse" />
+          </div>
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+            ✨ Expense Tracker ✨
+          </h1>
+          <p className="text-muted-foreground">Track your spending with style 💖</p>
           <Button 
             onClick={handleLogin} 
             disabled={isLoading}
-            className="hover-scale"
+            className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 transform transition-all duration-200 hover:scale-105"
           >
-            {isLoading ? "Signing in..." : "Sign in with Google"}
+            {isLoading ? "Signing in..." : "Sign in with Google ✨"}
           </Button>
         </div>
       </div>
@@ -185,60 +191,73 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background p-8">
-      <div className="max-w-7xl mx-auto space-y-8">
-        <div className="flex justify-between items-center animate-fade-in">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-rose-50 p-4 md:p-8">
+      <div className="max-w-7xl mx-auto space-y-6 md:space-y-8">
+        <div className="flex flex-col md:flex-row justify-between items-center gap-4 animate-fade-in">
           <div>
-            <h1 className="text-4xl font-bold tracking-tight">Expense Tracker</h1>
-            <p className="text-muted-foreground">Keep track of your spending</p>
+            <h1 className="text-3xl md:text-4xl font-bold tracking-tight bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+              Expense Tracker ✨
+            </h1>
+            <p className="text-muted-foreground">Keep track of your spending 💰</p>
           </div>
-          <div className="flex gap-4">
+          <div className="flex flex-wrap gap-2 md:gap-4">
             <SetBudgetDialog />
             <AddExpenseDialog />
             <Button 
               variant="outline" 
               onClick={() => supabase.auth.signOut()}
-              className="hover-scale"
+              className="hover:scale-105 transition-transform duration-200"
             >
-              Sign Out
+              Sign Out 👋
             </Button>
           </div>
         </div>
 
         {showBudgetAlert && budget && (
-          <Alert variant="destructive" className="animate-fade-in">
+          <Alert variant="destructive" className="animate-fade-in bg-red-50 border-red-200">
             <AlertTriangle className="h-4 w-4" />
             <AlertDescription>
-              Warning: You have spent more than 80% of your budget ({formatIndianCurrency(budget.amount)})
+              Warning: You have spent more than 80% of your budget ({formatIndianCurrency(budget.amount)}) 😱
             </AlertDescription>
           </Alert>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6 hover-scale animate-fade-in">
-            <h3 className="text-lg font-medium mb-2">Total Spent</h3>
-            <p className="text-3xl font-bold">{formatIndianCurrency(totalSpent)}</p>
-            <p className="text-muted-foreground text-sm">This month</p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+          <div className="rounded-2xl border bg-white/80 backdrop-blur-lg shadow-lg p-6 transform transition-all duration-200 hover:scale-105 animate-fade-in">
+            <div className="flex items-center gap-2 mb-2">
+              <PiggyBank className="h-6 w-6 text-purple-500" />
+              <h3 className="text-lg font-medium">Total Spent</h3>
+            </div>
+            <p className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+              {formatIndianCurrency(totalSpent)}
+            </p>
+            <p className="text-muted-foreground text-sm">This month 📅</p>
           </div>
-          <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6 hover-scale animate-fade-in" style={{ animationDelay: '100ms' }}>
-            <h3 className="text-lg font-medium mb-2">Average Daily</h3>
-            <p className="text-3xl font-bold">
+          <div className="rounded-2xl border bg-white/80 backdrop-blur-lg shadow-lg p-6 transform transition-all duration-200 hover:scale-105 animate-fade-in" style={{ animationDelay: '100ms' }}>
+            <div className="flex items-center gap-2 mb-2">
+              <TrendingUp className="h-6 w-6 text-pink-500" />
+              <h3 className="text-lg font-medium">Average Daily</h3>
+            </div>
+            <p className="text-3xl font-bold bg-gradient-to-r from-pink-600 to-rose-600 bg-clip-text text-transparent">
               {formatIndianCurrency(totalSpent / 30)}
             </p>
-            <p className="text-muted-foreground text-sm">Last 30 days</p>
+            <p className="text-muted-foreground text-sm">Last 30 days 📊</p>
           </div>
-          <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6 hover-scale animate-fade-in" style={{ animationDelay: '200ms' }}>
-            <h3 className="text-lg font-medium mb-2">Budget Left</h3>
-            <p className="text-3xl font-bold text-expense-low">
+          <div className="rounded-2xl border bg-white/80 backdrop-blur-lg shadow-lg p-6 transform transition-all duration-200 hover:scale-105 animate-fade-in" style={{ animationDelay: '200ms' }}>
+            <div className="flex items-center gap-2 mb-2">
+              <Sparkles className="h-6 w-6 text-rose-500" />
+              <h3 className="text-lg font-medium">Budget Left</h3>
+            </div>
+            <p className="text-3xl font-bold bg-gradient-to-r from-rose-600 to-orange-600 bg-clip-text text-transparent">
               {formatIndianCurrency(budget ? budget.amount - totalSpent : 0)}
             </p>
             <p className="text-muted-foreground text-sm">
-              From {formatIndianCurrency(budget?.amount || 0)}
+              From {formatIndianCurrency(budget?.amount || 0)} 💫
             </p>
           </div>
         </div>
 
-        <div className="h-[400px] animate-fade-in" style={{ animationDelay: '300ms' }}>
+        <div className={`h-[${isMobile ? '300px' : '400px'}] bg-white/80 backdrop-blur-lg rounded-2xl p-4 shadow-lg animate-fade-in`} style={{ animationDelay: '300ms' }}>
           <ExpenseChart
             data={expenses.map((expense) => ({
               name: new Date(expense.date).toLocaleDateString('en-IN'),
@@ -248,7 +267,9 @@ const Index = () => {
         </div>
 
         <div className="space-y-4 animate-fade-in" style={{ animationDelay: '400ms' }}>
-          <h2 className="text-2xl font-semibold">Recent Expenses</h2>
+          <h2 className="text-2xl font-semibold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+            Recent Expenses 📝
+          </h2>
           <div className="grid gap-4">
             {expenses.map((expense, index) => (
               <ExpenseCard
@@ -257,7 +278,7 @@ const Index = () => {
                 amount={expense.amount}
                 category={expense.category}
                 date={new Date(expense.date).toLocaleDateString('en-IN')}
-                className="animate-fade-in"
+                className="animate-fade-in bg-white/80 backdrop-blur-lg transform transition-all duration-200 hover:scale-[1.02]"
                 style={{ animationDelay: `${index * 50}ms` }}
               />
             ))}
