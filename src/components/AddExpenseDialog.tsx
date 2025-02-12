@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -153,7 +152,7 @@ export function AddExpenseDialog() {
           </div>
           <div className="space-y-2">
             <Label>Date</Label>
-            <Popover>
+            <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
@@ -162,10 +161,6 @@ export function AddExpenseDialog() {
                     !date && "text-muted-foreground"
                   )}
                   type="button"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setCalendarOpen(!calendarOpen);
-                  }}
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
                   {date ? format(date, "PPP") : <span>Pick a date</span>}
@@ -181,7 +176,6 @@ export function AddExpenseDialog() {
                       setCalendarOpen(false);
                     }
                   }}
-                  disabled={false}
                   initialFocus
                   fromDate={new Date(2023, 0, 1)}
                   toDate={new Date(2025, 11, 31)}
