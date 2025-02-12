@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -126,11 +127,12 @@ export function SetBudgetDialog() {
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
-                  className={cn(
-                    "w-full justify-start text-left font-normal",
-                    !startDate && "text-muted-foreground"
-                  )}
+                  className={cn("w-full justify-start text-left font-normal", !startDate && "text-muted-foreground")}
                   type="button"
+                  onPointerDown={(e) => {
+                    e.preventDefault();
+                    setStartCalendarOpen((prev) => !prev);
+                  }}
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
                   {startDate ? format(startDate, "PPP") : <span>Pick a date</span>}
@@ -159,11 +161,12 @@ export function SetBudgetDialog() {
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
-                  className={cn(
-                    "w-full justify-start text-left font-normal",
-                    !endDate && "text-muted-foreground"
-                  )}
+                  className={cn("w-full justify-start text-left font-normal", !endDate && "text-muted-foreground")}
                   type="button"
+                  onPointerDown={(e) => {
+                    e.preventDefault();
+                    setEndCalendarOpen((prev) => !prev);
+                  }}
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
                   {endDate ? format(endDate, "PPP") : <span>Pick a date</span>}
