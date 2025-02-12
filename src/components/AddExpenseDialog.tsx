@@ -153,7 +153,7 @@ export function AddExpenseDialog() {
           </div>
           <div className="space-y-2">
             <Label>Date</Label>
-            <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
+            <Popover>
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
@@ -161,6 +161,11 @@ export function AddExpenseDialog() {
                     "w-full justify-start text-left font-normal",
                     !date && "text-muted-foreground"
                   )}
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setCalendarOpen(!calendarOpen);
+                  }}
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
                   {date ? format(date, "PPP") : <span>Pick a date</span>}
@@ -171,9 +176,12 @@ export function AddExpenseDialog() {
                   mode="single"
                   selected={date}
                   onSelect={(newDate) => {
-                    setDate(newDate || new Date());
-                    setCalendarOpen(false);
+                    if (newDate) {
+                      setDate(newDate);
+                      setCalendarOpen(false);
+                    }
                   }}
+                  disabled={false}
                   initialFocus
                   fromDate={new Date(2023, 0, 1)}
                   toDate={new Date(2025, 11, 31)}

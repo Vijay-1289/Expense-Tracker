@@ -123,7 +123,7 @@ export function SetBudgetDialog() {
           </div>
           <div className="space-y-2">
             <Label>Start Date</Label>
-            <Popover open={startCalendarOpen} onOpenChange={setStartCalendarOpen}>
+            <Popover>
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
@@ -131,6 +131,11 @@ export function SetBudgetDialog() {
                     "w-full justify-start text-left font-normal",
                     !startDate && "text-muted-foreground"
                   )}
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setStartCalendarOpen(!startCalendarOpen);
+                  }}
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
                   {startDate ? format(startDate, "PPP") : <span>Pick a date</span>}
@@ -141,9 +146,12 @@ export function SetBudgetDialog() {
                   mode="single"
                   selected={startDate}
                   onSelect={(newDate) => {
-                    setStartDate(newDate || new Date());
-                    setStartCalendarOpen(false);
+                    if (newDate) {
+                      setStartDate(newDate);
+                      setStartCalendarOpen(false);
+                    }
                   }}
+                  disabled={false}
                   initialFocus
                   fromDate={new Date(2023, 0, 1)}
                   toDate={new Date(2025, 11, 31)}
@@ -153,7 +161,7 @@ export function SetBudgetDialog() {
           </div>
           <div className="space-y-2">
             <Label>End Date</Label>
-            <Popover open={endCalendarOpen} onOpenChange={setEndCalendarOpen}>
+            <Popover>
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
@@ -161,6 +169,11 @@ export function SetBudgetDialog() {
                     "w-full justify-start text-left font-normal",
                     !endDate && "text-muted-foreground"
                   )}
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setEndCalendarOpen(!endCalendarOpen);
+                  }}
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
                   {endDate ? format(endDate, "PPP") : <span>Pick a date</span>}
@@ -171,9 +184,12 @@ export function SetBudgetDialog() {
                   mode="single"
                   selected={endDate}
                   onSelect={(newDate) => {
-                    setEndDate(newDate || new Date());
-                    setEndCalendarOpen(false);
+                    if (newDate) {
+                      setEndDate(newDate);
+                      setEndCalendarOpen(false);
+                    }
                   }}
+                  disabled={false}
                   initialFocus
                   fromDate={startDate || new Date()}
                   toDate={new Date(2025, 11, 31)}
