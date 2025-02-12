@@ -18,6 +18,8 @@ export function SetBudgetDialog() {
   const [amount, setAmount] = useState("");
   const [startDate, setStartDate] = useState<Date | undefined>(new Date());
   const [endDate, setEndDate] = useState<Date | undefined>(new Date());
+  const [startCalendarOpen, setStartCalendarOpen] = useState(false);
+  const [endCalendarOpen, setEndCalendarOpen] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
 
@@ -121,7 +123,7 @@ export function SetBudgetDialog() {
           </div>
           <div className="space-y-2">
             <Label>Start Date</Label>
-            <Popover>
+            <Popover open={startCalendarOpen} onOpenChange={setStartCalendarOpen}>
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
@@ -138,15 +140,20 @@ export function SetBudgetDialog() {
                 <Calendar
                   mode="single"
                   selected={startDate}
-                  onSelect={(newDate) => setStartDate(newDate || new Date())}
+                  onSelect={(newDate) => {
+                    setStartDate(newDate || new Date());
+                    setStartCalendarOpen(false);
+                  }}
                   initialFocus
+                  fromDate={new Date(2023, 0, 1)}
+                  toDate={new Date(2025, 11, 31)}
                 />
               </PopoverContent>
             </Popover>
           </div>
           <div className="space-y-2">
             <Label>End Date</Label>
-            <Popover>
+            <Popover open={endCalendarOpen} onOpenChange={setEndCalendarOpen}>
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
@@ -163,8 +170,13 @@ export function SetBudgetDialog() {
                 <Calendar
                   mode="single"
                   selected={endDate}
-                  onSelect={(newDate) => setEndDate(newDate || new Date())}
+                  onSelect={(newDate) => {
+                    setEndDate(newDate || new Date());
+                    setEndCalendarOpen(false);
+                  }}
                   initialFocus
+                  fromDate={startDate || new Date()}
+                  toDate={new Date(2025, 11, 31)}
                 />
               </PopoverContent>
             </Popover>

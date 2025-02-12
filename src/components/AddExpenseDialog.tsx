@@ -31,6 +31,7 @@ export function AddExpenseDialog() {
   const [amount, setAmount] = useState("");
   const [category, setCategory] = useState("");
   const [date, setDate] = useState<Date | undefined>(new Date());
+  const [calendarOpen, setCalendarOpen] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
 
@@ -152,7 +153,7 @@ export function AddExpenseDialog() {
           </div>
           <div className="space-y-2">
             <Label>Date</Label>
-            <Popover>
+            <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
@@ -169,8 +170,13 @@ export function AddExpenseDialog() {
                 <Calendar
                   mode="single"
                   selected={date}
-                  onSelect={(newDate) => setDate(newDate || new Date())}
+                  onSelect={(newDate) => {
+                    setDate(newDate || new Date());
+                    setCalendarOpen(false);
+                  }}
                   initialFocus
+                  fromDate={new Date(2023, 0, 1)}
+                  toDate={new Date(2025, 11, 31)}
                 />
               </PopoverContent>
             </Popover>
