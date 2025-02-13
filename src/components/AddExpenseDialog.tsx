@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -58,19 +59,19 @@ export function AddExpenseDialog() {
     try {
       console.log('Adding expense:', {
         title,
-        amount,
-        category,
-        date,
-        user_id: user.id
-      });
-
-      const { error } = await supabase.from("expenses").insert({
-        title,
         amount: parseFloat(amount),
         category,
         date: date.toISOString(),
         user_id: user.id
       });
+
+      const { data, error } = await supabase.from("expenses").insert({
+        title,
+        amount: parseFloat(amount),
+        category,
+        date: date.toISOString(),
+        user_id: user.id
+      }).select();
 
       if (error) {
         console.error('Error adding expense:', error);
@@ -82,6 +83,7 @@ export function AddExpenseDialog() {
         return;
       }
 
+      console.log('Expense added successfully:', data);
       toast({
         title: "Success",
         description: "Expense added successfully",

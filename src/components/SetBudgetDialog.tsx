@@ -57,6 +57,8 @@ export function SetBudgetDialog() {
       return;
     }
 
+    console.log('Current user:', user.id);
+
     if (!amount || !startDateParsed || !endDateParsed) {
       toast({
         title: "💡 Incomplete Information",
@@ -76,14 +78,22 @@ export function SetBudgetDialog() {
     }
 
     try {
-      const { error } = await supabase.from("budgets").insert({
+      console.log('Inserting budget with data:', {
         amount: parseFloat(amount),
         start_date: startDateParsed.toISOString(),
         end_date: endDateParsed.toISOString(),
         user_id: user.id
       });
 
+      const { data, error } = await supabase.from("budgets").insert({
+        amount: parseFloat(amount),
+        start_date: startDateParsed.toISOString(),
+        end_date: endDateParsed.toISOString(),
+        user_id: user.id
+      }).select();
+
       if (error) {
+        console.error('Error inserting budget:', error);
         toast({
           title: "💥 Submission Error",
           description: `Failed to set budget: ${error.message}`,
@@ -92,6 +102,7 @@ export function SetBudgetDialog() {
         return;
       }
 
+      console.log('Budget inserted successfully:', data);
       toast({
         title: "🎉 Budget Set Successfully!",
         description: `Budget of ₹${amount} from ${startDateInput} to ${endDateInput}`,
@@ -102,6 +113,7 @@ export function SetBudgetDialog() {
       setStartDate(new Date());
       setEndDate(new Date());
     } catch (error) {
+      console.error('Unexpected error:', error);
       toast({
         title: "🚨 Unexpected Error",
         description: "An unexpected error occurred",
