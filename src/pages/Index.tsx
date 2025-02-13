@@ -6,7 +6,7 @@ import { AddExpenseDialog } from "@/components/AddExpenseDialog";
 import { SetBudgetDialog } from "@/components/SetBudgetDialog";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertTriangle, Sparkles, PiggyBank, TrendingUp } from "lucide-react";
+import { AlertTriangle, Sparkles, PiggyBank, TrendingUp, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -20,6 +20,7 @@ interface Expense {
 }
 
 interface Budget {
+  id: string;
   amount: number;
   start_date: string;
   end_date: string;
@@ -43,71 +44,121 @@ const Index = () => {
   const { toast } = useToast();
   const isMobile = useIsMobile();
 
-  useEffect(() => {
+  const fetchExpenses = async () => {
     if (!user) return;
 
-    const fetchExpenses = async () => {
-      try {
-        console.log('Fetching expenses for user:', user.id);
-        const { data, error } = await supabase
-          .from("expenses")
-          .select("*")
-          .eq('user_id', user.id)
-          .order("date", { ascending: false });
+    try {
+      console.log('Fetching expenses for user:', user.id);
+      const { data, error } = await supabase
+        .from("expenses")
+        .select("*")
+        .eq('user_id', user.id)
+        .order("date", { ascending: false });
 
-        if (error) {
-          console.error('Error fetching expenses:', error);
-          toast({
-            variant: "destructive",
-            title: "Error",
-            description: "Failed to load expenses. Please try again.",
-          });
-          return;
-        }
-
-        if (data) {
-          console.log('Fetched expenses:', data);
-          setExpenses(data as Expense[]);
-          const total = data.reduce((sum, expense) => sum + expense.amount, 0);
-          setTotalSpent(total);
-        }
-      } catch (error) {
-        console.error('Unexpected error fetching expenses:', error);
+      if (error) {
+        console.error('Error fetching expenses:', error);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to load expenses. Please try again.",
+        });
+        return;
       }
-    };
 
-    const fetchBudget = async () => {
-      try {
-        console.log('Fetching budget for user:', user.id);
-        const { data, error } = await supabase
-          .from("budgets")
-          .select("*")
-          .eq('user_id', user.id)
-          .order("created_at", { ascending: false })
-          .limit(1)
-          .single();
-
-        if (error && error.code !== 'PGRST116') { // Ignore "no rows returned" error
-          console.error('Error fetching budget:', error);
-          toast({
-            variant: "destructive",
-            title: "Error",
-            description: "Failed to load budget. Please try again.",
-          });
-          return;
-        }
-
-        if (data) {
-          console.log('Fetched budget:', data);
-          setBudget(data as Budget);
-          if (totalSpent / data.amount > 0.8) {
-            setShowBudgetAlert(true);
-          }
-        }
-      } catch (error) {
-        console.error('Unexpected error fetching budget:', error);
+      if (data) {
+        console.log('Fetched expenses:', data);
+        setExpenses(data as Expense[]);
+        const total = data.reduce((sum, expense) => sum + expense.amount, 0);
+        setTotalSpent(total);
       }
-    };
+    } catch (error) {
+      console.error('Unexpected error fetching expenses:', error);
+    }
+  };
+
+  const fetchBudget = async () => {
+    if (!user) return;
+
+    try {
+      console.log('Fetching budget for user:', user.id);
+      const { data, error } = await supabase
+        .from("budgets")
+        .select("*")
+        .eq('user_id', user.id)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .single();
+
+      if (error && error.code !== 'PGRST116') { // Ignore "no rows returned" error
+        console.error('Error fetching budget:', error);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to load budget. Please try again.",
+        });
+        return;
+      }
+
+      if (data) {
+        console.log('Fetched budget:', data);
+        setBudget(data as Budget);
+        if (totalSpent / data.amount > 0.8) {
+          setShowBudgetAlert(true);
+        }
+      }
+    } catch (error) {
+      console.error('Unexpected error fetching budget:', error);
+    }
+  };
+
+  const handleDeleteBudget = async () => {
+    if (!user || !budget) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Cannot delete budget. No active budget found.",
+      });
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from("budgets")
+        .delete()
+        .eq('id', budget.id)
+        .eq('user_id', user.id);
+
+      if (error) {
+        console.error('Error deleting budget:', error);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to delete budget. Please try again.",
+        });
+        return;
+      }
+
+      toast({
+        title: "Budget Deleted",
+        description: "Your budget has been successfully deleted.",
+      });
+
+      // Reset budget state
+      setBudget(null);
+      setTotalSpent(0);
+      setShowBudgetAlert(false);
+    } catch (error) {
+      console.error('Unexpected error deleting budget:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "An unexpected error occurred.",
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (!user) return;
 
     fetchExpenses();
     fetchBudget();
@@ -244,9 +295,21 @@ const Index = () => {
             <p className="text-muted-foreground text-sm">Last 30 days 📊</p>
           </div>
           <div className="rounded-2xl border bg-white/80 backdrop-blur-lg shadow-lg p-6 transform transition-all duration-200 hover:scale-105 animate-fade-in" style={{ animationDelay: '200ms' }}>
-            <div className="flex items-center gap-2 mb-2">
-              <Sparkles className="h-6 w-6 text-rose-500" />
-              <h3 className="text-lg font-medium">Budget Left</h3>
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <Sparkles className="h-6 w-6 text-rose-500" />
+                <h3 className="text-lg font-medium">Budget Left</h3>
+              </div>
+              {budget && (
+                <Button 
+                  variant="destructive" 
+                  size="sm" 
+                  onClick={handleDeleteBudget}
+                  className="flex items-center gap-1"
+                >
+                  <Trash2 className="h-4 w-4" /> Delete
+                </Button>
+              )}
             </div>
             <p className="text-3xl font-bold bg-gradient-to-r from-rose-600 to-orange-600 bg-clip-text text-transparent">
               {formatIndianCurrency(budget ? budget.amount - totalSpent : 0)}
